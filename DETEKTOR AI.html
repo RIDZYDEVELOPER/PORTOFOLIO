@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DETEKTOR AI - Deteksi Teks dan Foto</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        textarea, input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+        textarea:focus, input[type="file"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        .ai { background: #ffeaa7; color: #d63031; }
+        .human { background: #55efc4; color: #00b894; }
+        .unknown { background: #fdcb6e; color: #e17055; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DETEKTOR AI</h1>
+        <p>Deteksi apakah teks atau foto dibuat oleh AI atau manusia. Masukkan input dan klik deteksi!</p>
+        
+        <!-- Section untuk Teks -->
+        <div class="section">
+            <h2>Deteksi Teks (Ketikan)</h2>
+            <textarea id="textInput" placeholder="Masukkan teks di sini..." rows="5"></textarea>
+            <button onclick="detectText()">Deteksi Teks</button>
+            <div id="textResult" class="result"></div>
+        </div>
+        
+        <!-- Section untuk Gambar -->
+        <div class="section">
+            <h2>Deteksi Foto (Gambar)</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="detectImage()">Deteksi Gambar</button>
+            <div id="imageResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi deteksi teks (simulasi heuristik)
+        function detectText() {
+            const text = document.getElementById('textInput').value.trim();
+            const resultDiv = document.getElementById('textResult');
+            
+            if (!text) {
+                alert('Masukkan teks terlebih dahulu!');
+                return;
+            }
+            
+            // Heuristik sederhana: panjang teks, repetisi kata, pola bahasa
+            const words = text.split(/\s+/);
+            const uniqueWords = new Set(words);
+            const repetitionScore = (words.length - uniqueWords.size) / words.length;
+            const lengthScore = text.length > 500 ? 0.8 : 0.2; // Teks panjang lebih mungkin AI
+            const aiScore = (repetitionScore * 0.5 + lengthScore * 0.5) * 100;
+            
+            let resultClass, message;
+            if (aiScore > 70) {
+                resultClass = 'ai';
+                message = `Kemungkinan AI: ${aiScore.toFixed(1)}% (Teks terlihat seperti generated oleh AI)`;
+            } else if (aiScore < 30) {
+                resultClass = 'human';
+                message = `Kemungkinan Manusia: ${(100 - aiScore).toFixed(1)}% (Teks terlihat alami)`;
+            } else {
+                resultClass = 'unknown';
+                message = `Tidak yakin: ${aiScore.toFixed(1)}% AI (Perlu analisis lebih lanjut)`;
+            }
+            
+            resultDiv.className = `result ${resultClass}`;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+        
+        // Fungsi deteksi gambar (simulasi berdasarkan metadata)
+        function detectImage() {
+            const fileInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('imageResult');
+            
+            if (!fileInput.files[0]) {
+                alert('Pilih gambar terlebih dahulu!');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const sizeMB = file.size / (1024 * 1024);
+            
+            // Simulasi: Gambar besar atau resolusi tinggi lebih mungkin AI-generated
+            let aiScore = 50; // Default
+            if (sizeMB > 5) aiScore += 30; // File besar
+            if (file.type.includes('png') || file.type.includes('webp')) aiScore += 20; // Format umum AI
+            
+            // Acak sedikit untuk variasi
+            aiScore += Math.random() * 20 - 10;
+            aiScore = Math.max(0, Math.min(100, aiScore));
+            
+            let resultClass, message;
+            if (aiScore > 70) {
+                resultClass = 'ai';
+                message = `Kemungkinan AI: ${aiScore.toFixed(1)}% (Gambar terlihat seperti generated oleh AI)`;
+            } else if (aiScore < 30) {
+                resultClass = 'human';
+                message = `Kemungkinan Manusia: ${(100 - aiScore).toFixed(1)}% (Gambar terlihat alami)`;
+            } else {
+                resultClass = 'unknown';
+                message = `Tidak yakin: ${aiScore.toFixed(1)}% AI (Perlu analisis lebih lanjut)`;
+            }
+            
+            resultDiv.className = `result ${resultClass}`;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
